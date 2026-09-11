@@ -1,4 +1,4 @@
-export type SectorType = 'BAKERY' | 'DAIRY' | 'SWEETS' | 'CONFECTIONERY';
+export type SectorType = 'BAKERY' | 'DAIRY' | 'SWEETS' | 'CONFECTIONERY' | string;
 
 export interface Category {
   id: number;

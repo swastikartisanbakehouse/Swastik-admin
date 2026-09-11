@@ -1,39 +1,63 @@
 import React from 'react';
-import { Plus, Server, LogOut, User as UserIcon, RefreshCw, Layers } from 'lucide-react';
+import {
+  Menu,
+  Plus,
+  LogOut,
+  User as UserIcon,
+  RefreshCw,
+  Layers,
+  Headphones,
+} from 'lucide-react';
 import type { AdminUser } from '../types';
 
 interface HeaderProps {
   user: AdminUser | null;
+  onOpenNavDrawer: () => void;
   onOpenAddModal: () => void;
   onOpenCategoriesModal: () => void;
-  onOpenApiConfig: () => void;
   onLogout: () => void;
   onRefresh: () => void;
-  apiUrl: string;
   isRefreshing: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   user,
+  onOpenNavDrawer,
   onOpenAddModal,
   onOpenCategoriesModal,
-  onOpenApiConfig,
   onLogout,
   onRefresh,
-  apiUrl,
   isRefreshing,
 }) => {
   return (
     <header className="navbar">
       <div className="navbar-inner">
-        <div className="brand-wrapper">
-          <img src="/assets/logo.png" alt="Swastik Logo" className="brand-logo" />
-          <div className="brand-title">
-            Swastik
-            <span className="brand-badge">Admin Portal</span>
+        {/* Left Side: Burger Menu + Brand Title */}
+        <div className="header-left">
+          <button
+            className="btn btn-secondary btn-icon btn-burger"
+            onClick={onOpenNavDrawer}
+            title="Open Navigation Menu"
+            aria-label="Open Navigation Menu"
+            id="btn-burger-menu"
+          >
+            <Menu size={20} />
+          </button>
+
+          <div
+            className="brand-wrapper"
+            onClick={onOpenNavDrawer}
+            title="Click to open menu"
+          >
+            <img src="/assets/logo.png" alt="Swastik Logo" className="brand-logo" />
+            <div className="brand-title">
+              Swastik
+              <span className="brand-badge">Admin Portal</span>
+            </div>
           </div>
         </div>
 
+        {/* Right Side: Actions */}
         <div className="nav-actions">
           <button
             className="btn btn-secondary btn-sm"
@@ -42,29 +66,26 @@ export const Header: React.FC<HeaderProps> = ({
             disabled={isRefreshing}
           >
             <RefreshCw size={15} className={isRefreshing ? 'spin' : ''} />
-            <span>{isRefreshing ? 'Loading...' : 'Sync API'}</span>
+            <span className="hide-on-mobile">{isRefreshing ? 'Loading...' : 'Refresh'}</span>
           </button>
 
           <button
             className="btn btn-secondary btn-sm"
             onClick={onOpenCategoriesModal}
-            title="View Product Sectors"
+            title="View Product Sectors / Categories"
           >
             <Layers size={15} />
-            <span>Sectors</span>
+            <span className="hide-on-mobile">Categories</span>
           </button>
 
           <button
             className="btn btn-secondary btn-sm"
-            onClick={onOpenApiConfig}
-            title={`API Endpoint: ${apiUrl}`}
+            onClick={onOpenNavDrawer}
+            title="Technical Support"
           >
-            <Server size={15} />
-            <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {apiUrl.replace(/^https?:\/\//, '')}
-            </span>
+            <Headphones size={15} />
+            <span className="hide-on-mobile">Support</span>
           </button>
-
           <button
             className="btn btn-primary"
             onClick={onOpenAddModal}
@@ -75,8 +96,9 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {user && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '6px' }}>
               <div
+                className="hide-on-mobile"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -91,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
               >
                 <UserIcon size={14} color="var(--primary)" />
-                <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {user.name || user.email.split('@')[0]}
                 </span>
               </div>

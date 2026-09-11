@@ -9,8 +9,8 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onSuccess }) => {
-  const [email, setEmail] = useState('Swastikartisanbakehouse@gmail.com');
-  const [password, setPassword] = useState('ASHISH.kc1999');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +78,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onSuccess }) => 
                   style={{ paddingLeft: '38px' }}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Swastikartisanbakehouse@gmail.com"
+                  placeholder="Enter administrator email"
+                  autoComplete="username"
                   required
                 />
                 <Mail
@@ -103,7 +104,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onSuccess }) => 
                   style={{ paddingLeft: '38px' }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Enter password"
+                  autoComplete="current-password"
                   required
                 />
                 <Lock

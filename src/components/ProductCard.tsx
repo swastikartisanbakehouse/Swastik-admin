@@ -17,7 +17,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onDelete,
 }) => {
   const isOutOfStock = !product.is_available || product.stock_quantity === 0;
-  const isLowStock = product.stock_quantity > 0 && product.stock_quantity <= 50;
+  const isLowStock = product.is_available && product.stock_quantity > 0 && product.stock_quantity < 50;
   const hasDiscount = product.discount_price && parseFloat(product.discount_price) < parseFloat(product.price);
 
   const sectorDisplayName =
@@ -45,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             {sectorDisplayName}
           </span>
           <span className={`badge badge-stock ${isOutOfStock ? 'out' : isLowStock ? 'low' : ''}`}>
-            {isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock'}
+            {isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock (< 50)' : 'In Stock'}
           </span>
         </div>
       </div>

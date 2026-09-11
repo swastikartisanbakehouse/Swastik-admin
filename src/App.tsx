@@ -21,6 +21,7 @@ import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { CategoriesModal } from './components/CategoriesModal';
 import { ApiConfigModal } from './components/ApiConfigModal';
 import { LoginModal } from './components/LoginModal';
+import { NavigationDrawer } from './components/NavigationDrawer';
 import { Toast } from './components/Toast';
 import type { ToastMessage } from './components/Toast';
 import type { Product, Category, CreateProductPayload, AdminUser } from './types';
@@ -43,16 +44,17 @@ export const App: React.FC = () => {
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
   const [stockFilter, setStockFilter] = useState<'ALL' | 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
   const [sortBy, setSortBy] = useState<'NEWEST' | 'PRICE_LOW' | 'PRICE_HIGH' | 'NAME'>('NEWEST');
-  const [viewMode, setViewMode] = useState<'GRID' | 'TABLE'>('GRID');
+  const [viewMode, setViewMode] = useState<'GRID' | 'TABLE'>('TABLE');
 
-  // Modals state
+  // Modals & Navigation state
+  const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const [isApiConfigOpen, setIsApiConfigOpen] = useState(false);
-  const [apiUrl, setApiUrlState] = useState(getBaseUrl());
+  const [, setApiUrlState] = useState(getBaseUrl());
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -112,9 +114,9 @@ export const App: React.FC = () => {
 
         // Stock status filter
         if (stockFilter === 'IN_STOCK') {
-          if (!product.is_available || product.stock_quantity === 0) return false;
+          if (!product.is_available || product.stock_quantity < 50) return false;
         } else if (stockFilter === 'LOW_STOCK') {
-          if (product.stock_quantity <= 0 || product.stock_quantity > 50) return false;
+          if (!product.is_available || product.stock_quantity <= 0 || product.stock_quantity >= 50) return false;
         } else if (stockFilter === 'OUT_OF_STOCK') {
           if (product.is_available && product.stock_quantity > 0) return false;
         }
@@ -146,6 +148,23 @@ export const App: React.FC = () => {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
   }, [products, selectedSector, stockFilter, searchQuery, sortBy]);
+
+  // Product counts per sector for scalable category navigation
+  const productCountBySector = useMemo(() => {
+    const counts: Record<string, number> = {
+      BAKERY: 0,
+      DAIRY: 0,
+      SWEETS: 0,
+      CONFECTIONERY: 0,
+    };
+    products.forEach((p) => {
+      const sec = p.category_sector || p.category_detail?.sector || '';
+      if (sec) {
+        counts[sec] = (counts[sec] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [products]);
 
   // Actions
   const handleCreateProduct = async (payload: CreateProductPayload) => {
@@ -201,15 +220,14 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      {/* Header */}
+      {/* Header with Burger Navigation Menu */}
       <Header
         user={user}
+        onOpenNavDrawer={() => setIsNavDrawerOpen(true)}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenCategoriesModal={() => setIsCategoriesModalOpen(true)}
-        onOpenApiConfig={() => setIsApiConfigOpen(true)}
         onLogout={handleLogout}
         onRefresh={loadData}
-        apiUrl={apiUrl}
         isRefreshing={isRefreshing}
       />
 
@@ -280,7 +298,7 @@ export const App: React.FC = () => {
                 className={`sector-tab ${selectedSector === 'BAKERY' ? 'active' : ''}`}
                 onClick={() => setSelectedSector('BAKERY')}
               >
-                🍞 Bakery
+                Bakery
                 <span className="sector-tab-count">
                   {products.filter((p) => (p.category_sector || p.category_detail?.sector) === 'BAKERY').length}
                 </span>
@@ -290,7 +308,7 @@ export const App: React.FC = () => {
                 className={`sector-tab ${selectedSector === 'DAIRY' ? 'active' : ''}`}
                 onClick={() => setSelectedSector('DAIRY')}
               >
-                🥛 Dairy / Milk
+                Dairy / Milk Products
                 <span className="sector-tab-count">
                   {products.filter((p) => (p.category_sector || p.category_detail?.sector) === 'DAIRY').length}
                 </span>
@@ -300,7 +318,7 @@ export const App: React.FC = () => {
                 className={`sector-tab ${selectedSector === 'SWEETS' ? 'active' : ''}`}
                 onClick={() => setSelectedSector('SWEETS')}
               >
-                🍬 Sweets
+                Sweets
                 <span className="sector-tab-count">
                   {products.filter((p) => (p.category_sector || p.category_detail?.sector) === 'SWEETS').length}
                 </span>
@@ -310,7 +328,7 @@ export const App: React.FC = () => {
                 className={`sector-tab ${selectedSector === 'CONFECTIONERY' ? 'active' : ''}`}
                 onClick={() => setSelectedSector('CONFECTIONERY')}
               >
-                🥨 Confectionery
+                Confectionery
                 <span className="sector-tab-count">
                   {products.filter((p) => (p.category_sector || p.category_detail?.sector) === 'CONFECTIONERY').length}
                 </span>
@@ -330,8 +348,8 @@ export const App: React.FC = () => {
                   onChange={(e: any) => setStockFilter(e.target.value)}
                 >
                   <option value="ALL">All Statuses</option>
-                  <option value="IN_STOCK">In Stock</option>
-                  <option value="LOW_STOCK">Low Stock (≤50)</option>
+                  <option value="IN_STOCK">In Stock (≥ 50)</option>
+                  <option value="LOW_STOCK">Low Stock (&lt; 50)</option>
                   <option value="OUT_OF_STOCK">Out of Stock</option>
                 </select>
               </div>
@@ -438,6 +456,18 @@ export const App: React.FC = () => {
       </main>
 
       {/* Modals & Drawers */}
+      <NavigationDrawer
+        isOpen={isNavDrawerOpen}
+        onClose={() => setIsNavDrawerOpen(false)}
+        categories={categories}
+        selectedSector={selectedSector}
+        onSelectSector={(sec) => setSelectedSector(sec)}
+        onOpenCategoriesModal={() => setIsCategoriesModalOpen(true)}
+        onLogout={handleLogout}
+        user={user}
+        productCountBySector={productCountBySector}
+      />
+
       <AddProductModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -470,7 +500,9 @@ export const App: React.FC = () => {
         isOpen={isCategoriesModalOpen}
         onClose={() => setIsCategoriesModalOpen(false)}
         categories={categories}
+        selectedSector={selectedSector}
         onSelectSector={(sec) => setSelectedSector(sec)}
+        productCountBySector={productCountBySector}
       />
 
       <ApiConfigModal
