@@ -268,7 +268,12 @@ export const App: React.FC = () => {
         )}
 
         {/* Statistics Metric Cards */}
-        <StatsCards products={products} categories={categories} />
+        <StatsCards
+          products={products}
+          categories={categories}
+          onEditProduct={(p) => setEditingProduct(p)}
+          onViewProduct={(p) => setViewingProduct(p)}
+        />
 
         {/* Toolbar & Filters */}
         <div className="toolbar-card">

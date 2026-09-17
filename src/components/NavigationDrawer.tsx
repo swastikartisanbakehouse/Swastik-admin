@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Layers,
   Headphones,
-  LayoutGrid,
   LogOut,
   Phone,
   ChevronRight,
+  ChevronDown,
   Cake,
   Milk,
   Candy,
   Cookie,
 } from 'lucide-react';
+import logo from '../assets/logo.png';
 import type { Category, AdminUser } from '../types';
 
 interface NavigationDrawerProps {
@@ -37,6 +38,9 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
   user,
   productCountBySector,
 }) => {
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+
   if (!isOpen) return null;
 
   // Standard core business categories with rich icons & descriptions for scalable presentation
@@ -108,6 +112,8 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
     }
   });
 
+  const selectedSectorMeta = selectedSector !== 'ALL' ? getSectorMeta(selectedSector) : null;
+
   return (
     <div className="drawer-overlay" onClick={onClose}>
       <aside
@@ -118,7 +124,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
         {/* Drawer Header */}
         <div className="drawer-header">
           <div className="brand-wrapper">
-            <img src="/assets/logo.png" alt="Swastik Logo" className="brand-logo" />
+            <img src={logo} alt="Swastik Logo" className="brand-logo" />
             <div>
               <div className="brand-title" style={{ fontSize: '18px' }}>
                 Swastik
@@ -140,165 +146,203 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
         {/* Drawer Scrollable Content */}
         <div className="drawer-body">
-          {/* Quick Dashboard Action */}
+          {/* Main Navigation Group */}
           <div className="drawer-section">
             <div className="drawer-section-title">Navigation</div>
-            <button
-              className={`drawer-nav-item ${selectedSector === 'ALL' ? 'active' : ''}`}
-              onClick={() => {
-                onSelectSector('ALL');
-                onClose();
-              }}
-            >
-              <div className="drawer-nav-icon" style={{ background: 'var(--bg-main)', color: 'var(--primary)' }}>
-                <LayoutGrid size={18} />
-              </div>
-              <div className="drawer-nav-text">
-                <span className="drawer-nav-label">All Products Catalog</span>
-                <span className="drawer-nav-sub">Full multi-sector inventory</span>
-              </div>
-              <ChevronRight size={16} className="drawer-nav-chevron" />
-            </button>
-          </div>
-
-          {/* Section A: Categories */}
-          <div className="drawer-section">
-            <div className="drawer-section-header">
-              <div className="drawer-section-title">
-                <Layers size={14} style={{ marginRight: '6px', color: 'var(--primary)' }} />
-                A. Categories & Sectors
-              </div>
+            <div className="drawer-menu-list">
+              {/* 1. All Products Catalog
               <button
-                className="drawer-section-action"
+                className={`drawer-nav-item ${selectedSector === 'ALL' ? 'active' : ''}`}
                 onClick={() => {
+                  onSelectSector('ALL');
                   onClose();
-                  onOpenCategoriesModal();
                 }}
               >
-                View Details
-              </button>
-            </div>
-            <p className="drawer-section-desc">
-              Select any category to view and manage products in that business section:
-            </p>
+                <div
+                  className="drawer-nav-icon"
+                  style={{ background: 'var(--bg-main)', color: 'var(--primary)' }}
+                >
+                  <LayoutGrid size={18} />
+                </div>
+                <div className="drawer-nav-text">
+                  <span className="drawer-nav-label">All Products Catalog</span>
+                  <span className="drawer-nav-sub">Full multi-sector inventory</span>
+                </div>
+                <ChevronRight size={16} className="drawer-nav-chevron" />
+              </button> */}
 
-            <div className="drawer-category-list">
-              {displayCategories.map((item) => {
-                const meta = getSectorMeta(item.sector, item.name);
-                const isSelected = selectedSector === item.sector;
-                const count = productCountBySector[item.sector] ?? 0;
-
-                return (
-                  <button
-                    key={item.sector}
-                    className={`drawer-category-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => {
-                      onSelectSector(item.sector);
-                      onClose();
-                    }}
+              {/* 2. Categories & Sectors (Collapsible Dropdown) */}
+              <div className={`drawer-dropdown-item ${isCategoriesOpen ? 'is-expanded' : ''}`}>
+                <button
+                  type="button"
+                  className={`drawer-nav-item drawer-dropdown-trigger ${selectedSector !== 'ALL' ? 'active-filter' : ''
+                    }`}
+                  onClick={() => setIsCategoriesOpen((prev) => !prev)}
+                  aria-expanded={isCategoriesOpen}
+                >
+                  <div
+                    className="drawer-nav-icon"
+                    style={{ background: '#FEF3C7', color: '#D97706' }}
                   >
-                    <div
-                      className="category-item-icon"
-                      style={{ color: meta.color, background: meta.bg }}
+                    <Layers size={18} />
+                  </div>
+                  <div className="drawer-nav-text">
+                    <div className="drawer-item-title-row">
+                      <span className="drawer-nav-label">Categories & Sectors</span>
+                      {selectedSectorMeta ? (
+                        <span className="drawer-pill-badge active-sector-pill">
+                          {selectedSectorMeta.label}
+                        </span>
+                      ) : (
+                        <span className="drawer-pill-badge">{displayCategories.length}</span>
+                      )}
+                    </div>
+                    <span className="drawer-nav-sub">
+                      {selectedSectorMeta
+                        ? `Filter: ${selectedSectorMeta.label}`
+                        : 'Departmental business sectors'}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={`drawer-dropdown-caret ${isCategoriesOpen ? 'open' : ''}`}
+                  />
+                </button>
+
+                {/* Dropdown Content */}
+                {isCategoriesOpen && (
+                  <div className="drawer-dropdown-panel animate-drawer-panel">
+                    <div className="drawer-category-list">
+                      {displayCategories.map((item) => {
+                        const meta = getSectorMeta(item.sector, item.name);
+                        const isSelected = selectedSector === item.sector;
+                        const count = productCountBySector[item.sector] ?? 0;
+
+                        return (
+                          <button
+                            key={item.sector}
+                            className={`drawer-category-item ${isSelected ? 'selected' : ''}`}
+                            onClick={() => {
+                              onSelectSector(item.sector);
+                              onClose();
+                            }}
+                          >
+                            <div
+                              className="category-item-icon"
+                              style={{ color: meta.color, background: meta.bg }}
+                            >
+                              {meta.icon}
+                            </div>
+
+                            <div className="category-item-info">
+                              <div className="category-item-name-row">
+                                <span className="category-item-name">{meta.label}</span>
+                                <span className="category-item-count">
+                                  {count} {count === 1 ? 'item' : 'items'}
+                                </span>
+                              </div>
+                              <span className="category-item-desc">{meta.desc}</span>
+                            </div>
+
+                            <ChevronRight size={15} className="drawer-nav-chevron" />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      className="btn btn-secondary btn-sm drawer-manage-btn"
+                      onClick={() => {
+                        onClose();
+                        onOpenCategoriesModal();
+                      }}
                     >
-                      {meta.icon}
-                    </div>
+                      <Layers size={14} />
+                      <span>Manage / Inspect All Categories</span>
+                    </button>
+                  </div>
+                )}
+              </div>
 
-                    <div className="category-item-info">
-                      <div className="category-item-name-row">
-                        <span className="category-item-name">{meta.label}</span>
-                        <span className="category-item-count">{count} {count === 1 ? 'item' : 'items'}</span>
+              {/* 3. Technical Support (Collapsible Dropdown) */}
+              <div className={`drawer-dropdown-item ${isSupportOpen ? 'is-expanded' : ''}`}>
+                <button
+                  type="button"
+                  className="drawer-nav-item drawer-dropdown-trigger"
+                  onClick={() => setIsSupportOpen((prev) => !prev)}
+                  aria-expanded={isSupportOpen}
+                >
+                  <div
+                    className="drawer-nav-icon"
+                    style={{ background: 'var(--primary-subtle)', color: 'var(--primary)' }}
+                  >
+                    <Headphones size={18} />
+                  </div>
+                  <div className="drawer-nav-text">
+                    <div className="drawer-item-title-row">
+                      <span className="drawer-nav-label">Technical Support</span>
+                      <span className="drawer-pill-badge">2 Contacts</span>
+                    </div>
+                    <span className="drawer-nav-sub">Backend API & portal queries</span>
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={`drawer-dropdown-caret ${isSupportOpen ? 'open' : ''}`}
+                  />
+                </button>
+
+                {/* Dropdown Content */}
+                {isSupportOpen && (
+                  <div className="drawer-dropdown-panel animate-drawer-panel">
+                    <div className="drawer-support-list">
+                      {/* Person 1: Suhail */}
+                      <div className="drawer-support-card">
+                        <div className="support-card-header">
+                          <div className="support-avatar">SS</div>
+                          <div className="support-info">
+                            <div className="support-name">Suhail Siddiqui</div>
+                            <div className="support-role">Technical Support</div>
+                          </div>
+                          <a
+                            href="tel:+917311135785"
+                            className="btn btn-secondary btn-sm support-call-pill"
+                            title="Call Suhail Siddiqui"
+                          >
+                            <Phone size={12} color="var(--primary)" />
+                            <span>Call</span>
+                          </a>
+                        </div>
+                        <a href="tel:+917311135785" className="support-quick-phone">
+                          <Phone size={12} color="var(--text-muted)" />
+                          <span>+91 73111 35785</span>
+                        </a>
                       </div>
-                      <span className="category-item-desc">{meta.desc}</span>
+
+                      {/* Person 2: Ghazali */}
+                      <div className="drawer-support-card">
+                        <div className="support-card-header">
+                          <div className="support-avatar">GH</div>
+                          <div className="support-info">
+                            <div className="support-name">Ghazali Hussain</div>
+                            <div className="support-role">Technical Support</div>
+                          </div>
+                          <a
+                            href="tel:+918957854484"
+                            className="btn btn-secondary btn-sm support-call-pill"
+                            title="Call Ghazali Hussain"
+                          >
+                            <Phone size={12} color="var(--primary)" />
+                            <span>Call</span>
+                          </a>
+                        </div>
+                        <a href="tel:+918957854484" className="support-quick-phone">
+                          <Phone size={12} color="var(--text-muted)" />
+                          <span>+91 89578 54484</span>
+                        </a>
+                      </div>
                     </div>
-
-                    <ChevronRight size={16} className="drawer-nav-chevron" />
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              className="btn btn-secondary btn-sm"
-              style={{ width: '100%', marginTop: '10px', justifyContent: 'center' }}
-              onClick={() => {
-                onClose();
-                onOpenCategoriesModal();
-              }}
-            >
-              <Layers size={14} />
-              <span>Manage / Inspect All Categories</span>
-            </button>
-          </div>
-
-          {/* Section B: Help & Support */}
-          <div className="drawer-section">
-            <div className="drawer-section-header">
-              <div className="drawer-section-title">
-                <Headphones size={14} style={{ marginRight: '6px', color: 'var(--primary)' }} />
-                B. Technical Support
-              </div>
-            </div>
-            <p className="drawer-section-desc">
-              Direct point of contact for portal queries, backend API, or catalog issues:
-            </p>
-
-            {/* Support Persons Info Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {/* Person 1 */}
-              <div className="drawer-support-card">
-                <div className="support-card-header">
-                  <div className="support-avatar">SS</div>
-                  <div style={{ flex: 1 }}>
-                    <div className="support-name">Suhail Siddiqui</div>
-                    <div className="support-role">Technical Support</div>
                   </div>
-                </div>
-
-                <div className="support-detail-rows">
-                  <a href="tel:+917311135785" className="support-row-link">
-                    <Phone size={14} color="var(--primary)" />
-                    <span className="support-row-label">Phone:</span>
-                    <span className="support-row-val">+917311135785</span>
-                  </a>
-                </div>
-
-                <a
-                  href="tel:+917311135785"
-                  className="btn btn-secondary btn-sm"
-                  style={{ width: '100%', justifyContent: 'center', fontWeight: 600 }}
-                >
-                  <Phone size={13} color="var(--primary)" />
-                  <span>Call Suhail</span>
-                </a>
-              </div>
-
-              {/* Person 2 */}
-              <div className="drawer-support-card">
-                <div className="support-card-header">
-                  <div className="support-avatar">GH</div>
-                  <div style={{ flex: 1 }}>
-                    <div className="support-name">Ghazali Hussain</div>
-                    <div className="support-role">Technical Support</div>
-                  </div>
-                </div>
-
-                <div className="support-detail-rows">
-                  <a href="tel:+918957854484" className="support-row-link">
-                    <Phone size={14} color="var(--primary)" />
-                    <span className="support-row-label">Phone:</span>
-                    <span className="support-row-val">+918957854484</span>
-                  </a>
-                </div>
-
-                <a
-                  href="tel:+918957854484"
-                  className="btn btn-secondary btn-sm"
-                  style={{ width: '100%', justifyContent: 'center', fontWeight: 600 }}
-                >
-                  <Phone size={13} color="var(--primary)" />
-                  <span>Call Ghazali</span>
-                </a>
+                )}
               </div>
             </div>
           </div>

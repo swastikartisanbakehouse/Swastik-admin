@@ -8,6 +8,7 @@ import {
   Layers,
   Headphones,
 } from 'lucide-react';
+import logo from "../assets/logo.png";
 import type { AdminUser } from '../types';
 
 interface HeaderProps {
@@ -49,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenNavDrawer}
             title="Click to open menu"
           >
-            <img src="/assets/logo.png" alt="Swastik Logo" className="brand-logo" />
+            <img src={logo} alt="Swastik Logo" className="brand-logo" />
             <div className="brand-title">
               Swastik
               <span className="brand-badge">Admin Portal</span>

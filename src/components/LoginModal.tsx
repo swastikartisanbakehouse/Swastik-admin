@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { apiService } from '../api/client';
+import logo from '../assets/logo.png';
 import type { AdminUser } from '../types';
 
 interface LoginModalProps {
@@ -20,7 +21,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onSuccess }) => 
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       const res = await apiService.login(email.trim(), password);
       onSuccess(res.user);
@@ -36,7 +36,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onSuccess }) => 
       <div className="modal-dialog" style={{ maxWidth: '420px', margin: 'auto' }}>
         <div style={{ padding: '32px 28px 20px 28px', textAlign: 'center' }}>
           <img
-            src="/assets/logo.png"
+            src={logo}
             alt="Swastik"
             style={{ width: '64px', height: '64px', borderRadius: '14px', marginBottom: '12px' }}
           />
